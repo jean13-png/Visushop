@@ -288,7 +288,8 @@ bootstrap_gradle_jdk() {
 verify_android_bridge() {
     local app="$1" apk="$2"
     needs_apk2 "$app" || return 0
-    local manifest="$ROOT/source/$app/apps/$app-android/Cargo.toml"
+    # The prepared manifest includes app-name and package overrides; the source adapter does not.
+    local manifest="$ANDROID_DIR/Cargo.toml"
     [[ -f "$manifest" ]] || manifest="$ROOT/adapters/$app/Cargo.toml"
     [[ -f "$manifest" ]] || { echo "WARNING: no manifest found for '$app'; skipping file-bridge verification." >&2; return 0; }
     local pkg activity launcher
@@ -309,11 +310,8 @@ for a in acts:
     if name:
         break
 pkg = android["package"]
-if name.startswith("."):
-    name = pkg + name
-elif "." not in name:
-    name = pkg + "." + name
-print(pkg, name, "1" if launches else "0")
+full_name = pkg + name if name.startswith(".") else (name if "." in name else pkg + "." + name)
+print(pkg, full_name, "1" if launches else "0")
 PY
 )
     [[ -n "$pkg" && -n "$activity" ]] || { echo "WARNING: could not read the manifest for '$app'; skipping file-bridge verification." >&2; return 0; }
@@ -330,7 +328,7 @@ PY
     if ! python3 - "$apk" "$activity" <<'PY'
 import sys, zipfile
 apk, activity = sys.argv[1], sys.argv[2]
-needle = activity.rsplit(".", 1)[-1].encode()
+needle = activity.replace(".", "/").encode()
 with zipfile.ZipFile(apk) as z:
     names = z.namelist()
     in_dex = any(n.endswith(".dex") and needle in z.read(n) for n in names)
