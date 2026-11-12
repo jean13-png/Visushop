@@ -34,3 +34,12 @@ Date : 12 novembre 2026
 - Constructeur : https://github.com/MostafaXS1/artcraft-android
 - Architecture : https://github.com/MostafaXS1/artcraft-android/blob/52308fbcb26d8d8625f35fc1f048813f8e1e12a8/architecture.md
 - PhotoCraft : https://github.com/storytold/photocraft
+
+## Avancement compilation — 12 novembre 2026
+
+- Rust, cargo-ndk, JDK 21 et SDK/NDK Android préparés dans l'environnement de travail.
+- PhotoCraft v0.20.2 épinglé au commit `7c12f647150f8e7b2e07718f7993b1fcaa57fefe` pour cet essai.
+- Le port configure l'architecture arm64-v8a et Android minimum API 28 pour cet essai ; autres appareils non validés.
+- Une première construction native a été interrompue par SIGKILL lors de compilations parallèles ; une reprise avec un seul job est lancée.
+- Correctif apporté à la vérification du manifeste généré, afin de tenir compte de l'identifiant VISUSHOP et du nom pleinement qualifié de l'activité.
+- Le résultat final et les tests sur appareil restent à confirmer ; ne pas considérer cette version comme une release.

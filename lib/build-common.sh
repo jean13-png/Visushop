@@ -288,8 +288,9 @@ bootstrap_gradle_jdk() {
 verify_android_bridge() {
     local app="$1" apk="$2"
     needs_apk2 "$app" || return 0
-    local manifest="$ROOT/adapters/$app/Cargo.toml"
-    [[ -f "$manifest" ]] || manifest="$ROOT/source/$app/apps/$app-android/Cargo.toml"
+    # The prepared manifest includes app-name and package overrides; the source adapter does not.
+    local manifest="$ANDROID_DIR/Cargo.toml"
+    [[ -f "$manifest" ]] || manifest="$ROOT/adapters/$app/Cargo.toml"
     [[ -f "$manifest" ]] || { echo "WARNING: no manifest found for '$app'; skipping file-bridge verification." >&2; return 0; }
     local pkg activity launcher
     read -r pkg activity launcher < <(python3 - "$manifest" <<'PY'
@@ -308,7 +309,9 @@ for a in acts:
             launches = True
     if name:
         break
-print(android["package"], name.lstrip("."), "1" if launches else "0")
+pkg = android["package"]
+full_name = pkg + name if name.startswith(".") else (name if "." in name else pkg + "." + name)
+print(pkg, full_name, "1" if launches else "0")
 PY
 )
     [[ -n "$pkg" && -n "$activity" ]] || { echo "WARNING: could not read the manifest for '$app'; skipping file-bridge verification." >&2; return 0; }
@@ -318,14 +321,14 @@ PY
     if command -v aapt2 >/dev/null 2>&1; then
         local badging
         badging="$(aapt2 dump badging "$apk" 2>/dev/null || true)"
-        if ! grep -q "launchable-activity: name='$pkg.$activity'" <<<"$badging"; then
-            fail "The built APK has no launcher activity '$pkg.$activity' (its manifest is missing the MAIN/LAUNCHER intent-filter), so it could not be started from the home screen."
+        if ! grep -q "launchable-activity: name='$activity'" <<<"$badging"; then
+            fail "The built APK has no launcher activity '$activity' (its manifest is missing the MAIN/LAUNCHER intent-filter), so it could not be started from the home screen."
         fi
     fi
     if ! python3 - "$apk" "$activity" <<'PY'
 import sys, zipfile
 apk, activity = sys.argv[1], sys.argv[2]
-needle = activity.encode()
+needle = activity.replace(".", "/").encode()
 with zipfile.ZipFile(apk) as z:
     names = z.namelist()
     in_dex = any(n.endswith(".dex") and needle in z.read(n) for n in names)
@@ -335,7 +338,7 @@ PY
     then
         fail "The built APK is missing the compiled Activity '$activity' or its native library, so the Java SAF file picker is not in the APK."
     fi
-    echo "Verified the Android file bridge: $pkg.$activity launches the app and is compiled into the APK."
+    echo "Verified the Android file bridge: $activity launches the app and is compiled into the APK."
 }
 
 # ---- The Android SDK -------------------------------------------------------------------------
