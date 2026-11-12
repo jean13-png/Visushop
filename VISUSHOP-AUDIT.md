@@ -43,3 +43,9 @@ Date : 12 novembre 2026
 - Une première construction native a été interrompue par SIGKILL lors de compilations parallèles ; une reprise avec un seul job est lancée.
 - Correctif apporté à la vérification du manifeste généré, afin de tenir compte de l'identifiant VISUSHOP et du nom pleinement qualifié de l'activité.
 - Le résultat final et les tests sur appareil restent à confirmer ; ne pas considérer cette version comme une release.
+
+## Icône et compilation — mise à jour
+
+- L'icône choisie a été intégrée comme ressource du constructeur et les métadonnées et la vérification d'activité renommée ont été corrigées.
+- L'environnement de test dispose de 2 Gio de mémoire. Après installation de Rust, JDK, SDK et NDK, une compilation en un seul job et sans symboles debug a produit le moteur natif, mais le compilateur de l'interface `photocraft-ui-egui` a été arrêté par SIGKILL. L'épuisement mémoire est une cause probable au vu de la mémoire disponible ; le motif précis n'est pas confirmé.
+- Aucun APK n'a été produit ou testé. Un workflow manuel de construction plus riche en mémoire est proposé dans `docs/visushop-build-workflow.yml`, mais ne sera pas actif tant qu'il n'aura pas été ajouté à `.github/workflows/` et exécuté. Son fonctionnement reste à vérifier.

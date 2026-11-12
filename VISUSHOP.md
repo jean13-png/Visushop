@@ -37,3 +37,5 @@ L'interface et les liens ont été ajoutés au code, mais n'ont pas encore été
 ### Icône et état de compilation
 
 L'icône choisie est enregistrée dans `assets/visushop-icone.png` et transmise par le script de développement au générateur d'icônes Android. Une première tentative de compilation a utilisé PhotoCraft `v0.20.2` : les métadonnées Android générées indiquent Android 9 (API 28) minimum et ARM 64 bits. Ce sont les limites de cette configuration, pas une garantie de compatibilité. La compilation et les tests sur appareil restent à valider ; la clé de développement locale ne doit pas servir aux versions publiques.
+
+Pour tenter une construction sur GitHub Actions, une proposition de workflow manuel figure dans `docs/visushop-build-workflow.yml`. Elle ne s'exécute pas tant que le fichier n'est pas placé dans `.github/workflows/` sur GitHub. Le workflow et son résultat doivent être vérifiés avant toute diffusion.
