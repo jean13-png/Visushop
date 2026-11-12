@@ -33,3 +33,7 @@ La base Android provient de [MostafaXS1/artcraft-android](https://github.com/Mos
 À chaque lancement de l'activité, un écran présente WhatsApp et Facebook ; X et GitHub sont désactivés en attendant leurs liens. La participation est facultative : « Continuer vers l’éditeur » donne accès à l'application. Les boutons sociaux ouvrent les liens externes, sans collecte ni vérification d'adhésion. Le retour depuis un lien ne doit pas être interprété comme un nouveau lancement.
 
 L'interface et les liens ont été ajoutés au code, mais n'ont pas encore été compilés ni testés sur Android. L'override du nom et du package pour l'adaptateur PhotoCraft a fait l'objet d'un test de génération de manifeste avec un faux espace source.
+
+### Icône et état de compilation
+
+L'icône choisie est enregistrée dans `assets/visushop-icone.png` et transmise par le script de développement au générateur d'icônes Android. Une première tentative de compilation a utilisé PhotoCraft `v0.20.2` : les métadonnées Android générées indiquent Android 9 (API 28) minimum et ARM 64 bits. Ce sont les limites de cette configuration, pas une garantie de compatibilité. La compilation et les tests sur appareil restent à valider ; la clé de développement locale ne doit pas servir aux versions publiques.

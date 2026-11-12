@@ -4,6 +4,7 @@ APP="${1:-photocraft}"
 TITLE="${2:-PhotoCraft}"
 SRC="${3:-source/photocraft}"
 PACKAGE_NAME="${5:-}"
+APP_ICON="${6:-}"
 ROOT="$(cd -- "$(dirname -- "${BASH_SOURCE[0]}")/../.." && pwd)"
 SRC_ABS="$ROOT/$SRC"
 ADAPTER="$ROOT/adapters/photocraft"
@@ -30,7 +31,7 @@ cp -f "$ROOT/templates/android/system_fonts.rs" "$DEST/src/system_fonts.rs"
 # there is no ime_bridge module to copy.
 # Launcher icons: density mipmaps plus the API 26+ adaptive layers, from the same shared module
 # the generated launchers use (see lib/app_icons.py).
-if ! python3 "$ROOT/lib/app_icons.py" --src "$SRC_ABS" --app "$APP" --dest "$DEST/res"; then
+if ! python3 "$ROOT/lib/app_icons.py" --src "$SRC_ABS" --app "$APP" --dest "$DEST/res" ${APP_ICON:+--appicon="$APP_ICON"}; then
   echo "No PhotoCraft icon could be generated; using a generic Android icon." >&2
   sed -i '/^icon = /d' "$DEST/Cargo.toml"
 fi

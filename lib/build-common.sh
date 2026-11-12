@@ -288,8 +288,8 @@ bootstrap_gradle_jdk() {
 verify_android_bridge() {
     local app="$1" apk="$2"
     needs_apk2 "$app" || return 0
-    local manifest="$ROOT/adapters/$app/Cargo.toml"
-    [[ -f "$manifest" ]] || manifest="$ROOT/source/$app/apps/$app-android/Cargo.toml"
+    local manifest="$ROOT/source/$app/apps/$app-android/Cargo.toml"
+    [[ -f "$manifest" ]] || manifest="$ROOT/adapters/$app/Cargo.toml"
     [[ -f "$manifest" ]] || { echo "WARNING: no manifest found for '$app'; skipping file-bridge verification." >&2; return 0; }
     local pkg activity launcher
     read -r pkg activity launcher < <(python3 - "$manifest" <<'PY'
@@ -308,7 +308,12 @@ for a in acts:
             launches = True
     if name:
         break
-print(android["package"], name.lstrip("."), "1" if launches else "0")
+pkg = android["package"]
+if name.startswith("."):
+    name = pkg + name
+elif "." not in name:
+    name = pkg + "." + name
+print(pkg, name, "1" if launches else "0")
 PY
 )
     [[ -n "$pkg" && -n "$activity" ]] || { echo "WARNING: could not read the manifest for '$app'; skipping file-bridge verification." >&2; return 0; }
@@ -318,14 +323,14 @@ PY
     if command -v aapt2 >/dev/null 2>&1; then
         local badging
         badging="$(aapt2 dump badging "$apk" 2>/dev/null || true)"
-        if ! grep -q "launchable-activity: name='$pkg.$activity'" <<<"$badging"; then
-            fail "The built APK has no launcher activity '$pkg.$activity' (its manifest is missing the MAIN/LAUNCHER intent-filter), so it could not be started from the home screen."
+        if ! grep -q "launchable-activity: name='$activity'" <<<"$badging"; then
+            fail "The built APK has no launcher activity '$activity' (its manifest is missing the MAIN/LAUNCHER intent-filter), so it could not be started from the home screen."
         fi
     fi
     if ! python3 - "$apk" "$activity" <<'PY'
 import sys, zipfile
 apk, activity = sys.argv[1], sys.argv[2]
-needle = activity.encode()
+needle = activity.rsplit(".", 1)[-1].encode()
 with zipfile.ZipFile(apk) as z:
     names = z.namelist()
     in_dex = any(n.endswith(".dex") and needle in z.read(n) for n in names)
@@ -335,7 +340,7 @@ PY
     then
         fail "The built APK is missing the compiled Activity '$activity' or its native library, so the Java SAF file picker is not in the APK."
     fi
-    echo "Verified the Android file bridge: $pkg.$activity launches the app and is compiled into the APK."
+    echo "Verified the Android file bridge: $activity launches the app and is compiled into the APK."
 }
 
 # ---- The Android SDK -------------------------------------------------------------------------
@@ -711,7 +716,7 @@ bash "$ROOT/lib/subcraft.sh" "$SRC" "$APP" "$TITLE"
 say 4 "Preparing the NativeActivity launcher..."
 if [[ -x "adapters/$APP/prepare.sh" ]]; then
     echo "Using app-specific adapter: adapters/$APP/prepare.sh"
-    bash "adapters/$APP/prepare.sh" "$APP" "$TITLE" "$SRC" "$MODE" "$PACKAGENAME"
+    bash "adapters/$APP/prepare.sh" "$APP" "$TITLE" "$SRC" "$MODE" "$PACKAGENAME" "$APPICON"
 else
     python3 - "$ROOT" "$SRC" "$APP" "$TITLE" "$TARGET_SDK" "$APPNAME" "$PACKAGENAME" "$APPICON" <<'PY'
 from pathlib import Path
