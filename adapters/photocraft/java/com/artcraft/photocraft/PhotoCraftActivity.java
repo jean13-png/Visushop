@@ -658,7 +658,8 @@ public final class PhotoCraftActivity extends NativeActivity {
         // Once, on the first launch: the settings screen that grants the app access to the device's
         // storage (the font folders the shell links included). Answered later, outside the app, so
         // the links the shell makes at startup are refreshed when the access arrives.
-        requestStoragePermission();
+        // Show on each fresh app launch, without requiring a community subscription.
+        VisushopWelcome.show(this, this::requestStoragePermission);
         handleIncomingFiles(getIntent());
         // Ask GitHub whether a newer builder release exists (a few seconds in, off the main
         // thread). The shared checker is installed next to this Activity by the builder.
@@ -672,6 +673,12 @@ public final class PhotoCraftActivity extends NativeActivity {
         // instead of onCreate, so stage it for the shell the same way.
         setIntent(intent);
         applyImmersiveFullscreen();
+        // A launcher tap on an existing singleTask activity is another app opening.
+        // Returning from WhatsApp/Facebook is not a new launcher intent.
+        if (Intent.ACTION_MAIN.equals(intent.getAction())
+                && intent.hasCategory(Intent.CATEGORY_LAUNCHER)) {
+            VisushopWelcome.show(this, () -> {});
+        }
         handleIncomingFiles(intent);
     }
 

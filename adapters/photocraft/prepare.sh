@@ -3,6 +3,7 @@ set -Eeuo pipefail
 APP="${1:-photocraft}"
 TITLE="${2:-PhotoCraft}"
 SRC="${3:-source/photocraft}"
+PACKAGE_NAME="${5:-}"
 ROOT="$(cd -- "$(dirname -- "${BASH_SOURCE[0]}")/../.." && pwd)"
 SRC_ABS="$ROOT/$SRC"
 ADAPTER="$ROOT/adapters/photocraft"
@@ -45,4 +46,22 @@ import file_associations
 file_associations.patch_cargo_toml(path, app)
 tomllib.loads(path.read_text())
 PY
+# Custom adapters need the same name/package overrides as generated launchers.
+# Use a fully qualified activity class when the application ID changes.
+python3 - "$DEST/Cargo.toml" "$TITLE" "$PACKAGE_NAME" <<'PYCODE'
+import json, re, sys, tomllib
+from pathlib import Path
+path, title, package = Path(sys.argv[1]), sys.argv[2], sys.argv[3]
+if package and not re.fullmatch(r"[A-Za-z][A-Za-z0-9_]*(?:\.[A-Za-z][A-Za-z0-9_]*)+", package):
+    raise SystemExit("Invalid Android application package name")
+text = path.read_text()
+if package:
+    text, n = re.subn(r'(?m)^package = "com\.artcraft\.photocraft"$', 'package = ' + json.dumps(package), text, count=1)
+    if n != 1: raise SystemExit("PhotoCraft package metadata not found")
+text = text.replace('name = ".PhotoCraftActivity"', 'name = "com.artcraft.photocraft.PhotoCraftActivity"')
+text, n = re.subn(r'(?m)^label = "PhotoCraft"$', lambda _: 'label = ' + json.dumps(title, ensure_ascii=False), text)
+if n != 2: raise SystemExit("PhotoCraft application/activity labels not found")
+tomllib.loads(text)
+path.write_text(text)
+PYCODE
 echo "Installed PhotoCraft SAF adapter in $DEST (upstream PhotoCraft crates were not edited)."

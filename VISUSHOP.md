@@ -27,3 +27,9 @@ L'architecture documentée par le constructeur cible actuellement arm64-v8a. Ne 
 La base Android provient de [MostafaXS1/artcraft-android](https://github.com/MostafaXS1/artcraft-android), sous licence MIT ; sa notice figure dans `LICENSE`. Le code PhotoCraft est téléchargé séparément par le constructeur depuis [storytold/photocraft](https://github.com/storytold/photocraft), qui indique MIT ou Apache-2.0. Les licences, notices, marques, polices et dépendances devront être vérifiées avant redistribution. Les droits sur les marques des projets d'origine restent ceux de leurs titulaires. VISUSHOP n'est pas affilié à Adobe.
 
 **Note de dépôt :** les workflows GitHub Actions du constructeur amont ne sont pas inclus dans cette première importation ; ils nécessitent une autorisation spécifique et un audit avant activation.
+
+## Accueil communautaire (en cours de validation)
+
+À chaque lancement de l'activité, un écran présente WhatsApp et Facebook ; X et GitHub sont désactivés en attendant leurs liens. La participation est facultative : « Continuer vers l’éditeur » donne accès à l'application. Les boutons sociaux ouvrent les liens externes, sans collecte ni vérification d'adhésion. Le retour depuis un lien ne doit pas être interprété comme un nouveau lancement.
+
+L'interface et les liens ont été ajoutés au code, mais n'ont pas encore été compilés ni testés sur Android. L'override du nom et du package pour l'adaptateur PhotoCraft a fait l'objet d'un test de génération de manifeste avec un faux espace source.
